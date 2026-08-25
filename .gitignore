@@ -1,0 +1,37 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Poetry
+poetry.lock.bak
+
+# VSCode
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Distribución / empaquetado
+build/
+dist/
+*.egg-info/
+
+# Tests / cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+
+# Variables de entorno
+.env
+
+# Sistema operativo
+.DS_Store
