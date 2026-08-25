@@ -7,6 +7,28 @@ Proyecto simple de ejemplo con [FastAPI](https://fastapi.tiangolo.com/), que imp
 - Python 3.11 o superior
 - [Poetry](https://python-poetry.org/docs/#installation) instalado
 
+### Instalar los requisitos en macOS (con Homebrew)
+
+Si no tienes [Homebrew](https://brew.sh/) instalado:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Instalar Python y Poetry:
+
+```bash
+brew install python@3.11
+brew install poetry
+```
+
+Verifica las versiones instaladas:
+
+```bash
+python3 --version
+poetry --version
+```
+
 ## Instalación
 
 ```bash
@@ -25,9 +47,14 @@ Documentación interactiva (Swagger UI): [http://127.0.0.1:8000/docs](http://127
 
 ## Ejecutar desde VS Code
 
-Este proyecto incluye una configuración en `.vscode/launch.json`. Solo abre el panel "Run and Debug" (⇧⌘D), selecciona **"Python Debugger: FastAPI"** y presiona ▶️.
+Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos pasos:
 
-> Asegúrate de que VS Code esté usando el intérprete de Python del entorno virtual creado por Poetry (`Python: Select Interpreter`).
+1. Ejecuta `poetry install` al menos una vez (ver arriba) para crear el entorno virtual.
+2. Abre la paleta de comandos (⇧⌘P) y ejecuta **"Python: Select Interpreter"**.
+3. Elige el intérprete que apunte al entorno virtual de este proyecto (algo como `fastapi-hello-world-XXXX-py3.XX`). Si no aparece en la lista, ejecuta `poetry env info` en la terminal para obtener la ruta y selecciónala con **"Enter interpreter path..."**.
+4. Abre el panel "Run and Debug" (⇧⌘D), selecciona **"Python Debugger: FastAPI"** y presiona ▶️.
+
+> Este paso solo se necesita hacer una vez por proyecto (o si borras/recreas el entorno virtual). VS Code recuerda el intérprete seleccionado.
 
 ## Endpoints
 
