@@ -18,3 +18,30 @@ class ItemResponse(BaseModel):
     name: str
     description: str | None = None
     price: float
+
+
+class ConsultaCodigoRequest(BaseModel):
+    """Datos que el cliente envía para validar un código de invitación."""
+    userInvitationCode: int = Field(..., examples=[123456])
+
+
+class ConsultaCodigoUser(BaseModel):
+    """Información del usuario asociado al código de invitación."""
+    idUser: int
+
+
+class ConsultaCodigoEvent(BaseModel):
+    """Información del evento asociado al código de invitación."""
+    idEvent: int
+
+
+class ConsultaCodigoData(BaseModel):
+    """Datos devueltos cuando el código de invitación es válido."""
+    user: ConsultaCodigoUser
+    event: ConsultaCodigoEvent
+
+
+class ConsultaCodigoResponse(BaseModel):
+    """Respuesta exitosa de la consulta del código de invitación."""
+    data: ConsultaCodigoData
+    message: str

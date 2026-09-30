@@ -2,7 +2,13 @@
 
 from fastapi import FastAPI, HTTPException
 
-from app.schemas import ItemRequest, ItemResponse
+#Importamos los modelos Pydantic desde el archivo schemas.py
+from app.schemas import (
+    ConsultaCodigoRequest,
+    ConsultaCodigoResponse,
+    ItemRequest,
+    ItemResponse,
+)
 
 app = FastAPI(
     title="FastAPI Hello World",
@@ -13,6 +19,16 @@ app = FastAPI(
 # "Base de datos" en memoria, solo para este ejemplo.
 items_db: dict[int, ItemResponse] = {}
 next_id = 1
+
+#No es una base de datos real, solo un diccionario para simular la validación de códigos de invitación.
+#Y que es un diccionario: guarda datos (llave -> valor) y en este caso la llave es el código de invitación y el valor es un diccionario con los datos del usuario y del evento.
+
+invitation_codes_db = {
+    123456: {
+        "idUser": 1,
+        "idEvent": 1,
+    }
+}
 
 
 @app.get("/", tags=["health"])
@@ -62,3 +78,37 @@ def delete_item(item_id: int) -> None:
     if item_id not in items_db:
         raise HTTPException(status_code=404, detail="Item no encontrado")
     del items_db[item_id]
+
+@app.post(
+    "/consulta_codigo.php",
+    response_model=ConsultaCodigoResponse,
+    tags=["consulta_codigo"],
+)
+
+# Endpoint para validar un código de invitación del evento.
+def consulta_codigo(request: ConsultaCodigoRequest) -> ConsultaCodigoResponse:
+    """Valida el código de invitación del evento."""
+
+    invitation = invitation_codes_db.get(request.userInvitationCode)
+
+    if invitation is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Código de invitación no encontrado",
+                "message": "El código de invitación no es válido",
+            },
+        )
+
+    return ConsultaCodigoResponse(
+        data={
+            "user": {
+                "idUser": invitation["idUser"],
+            },
+            "event": {
+                "idEvent": invitation["idEvent"],
+            },
+        },
+        message="Código de invitación válido",
+    )
