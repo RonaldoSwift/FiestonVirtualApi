@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException
 from app.schemas import (
     ConsultaCodigoRequest,
     ConsultaCodigoResponse,
+    DetalleUsuarioRequest,
+    DetalleUsuarioResponse,
     ItemRequest,
     ItemResponse,
 )
@@ -27,6 +29,25 @@ invitation_codes_db = {
     123456: {
         "idUser": 1,
         "idEvent": 1,
+    }
+}
+
+users_db = {
+    1: {
+        "idUser": 1,
+        "idEvent": 1,
+        "userName": "Usuario",
+        "userLastName": "De Prueba",
+        "userSurName": "",
+        "userEmail": "usuario@example.com",
+        "userPhone": "",
+        "userCell": "",
+        "userTotalScore": 0,
+        "userStatus": 1,
+        "avatar": "",
+        "userLikesPhotos": 0,
+        "userLikesVideos": 0,
+        "userRanking": 0,
     }
 }
 
@@ -111,4 +132,29 @@ def consulta_codigo(request: ConsultaCodigoRequest) -> ConsultaCodigoResponse:
             },
         },
         message="Código de invitación válido",
+    )
+
+#DETALLE USUARIO
+@app.post(
+    "/detalle_usuario.php",
+    response_model=DetalleUsuarioResponse,
+    tags=["detalle_usuario"],
+)
+def detalle_usuario(request: DetalleUsuarioRequest) -> DetalleUsuarioResponse:
+    """Devuelve los datos del usuario asociado al código de invitación."""
+
+    user = users_db.get(request.idUser)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario solicitado no existe",
+            },
+        )
+
+    return DetalleUsuarioResponse(
+        message="Usuario encontrado",
+        data={"user": user},
     )

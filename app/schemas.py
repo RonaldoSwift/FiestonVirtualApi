@@ -45,3 +45,38 @@ class ConsultaCodigoResponse(BaseModel):
     """Respuesta exitosa de la consulta del código de invitación."""
     data: ConsultaCodigoData
     message: str
+
+#DETALLE DE USUARIO 
+
+class DetalleUsuarioRequest(BaseModel):
+    """Datos que el cliente envía para consultar un usuario."""
+    idUser: int = Field(..., examples=[1])
+
+
+class DetalleUsuarioData(BaseModel):
+    """Información del usuario devuelta por la API."""
+    idUser: int
+    idEvent: int
+    userName: str
+    userLastName: str
+    userSurName: str
+    userEmail: str
+    userPhone: str
+    userCell: str
+    userTotalScore: int
+    userStatus: int
+    avatar: str
+    userLikesPhotos: int
+    userLikesVideos: int
+    userRanking: int
+
+
+class DetalleUsuarioResponseData(BaseModel):
+    """Contenedor de la información del usuario."""
+    user: DetalleUsuarioData
+
+
+class DetalleUsuarioResponse(BaseModel):
+    """Respuesta exitosa de la consulta de usuario."""
+    message: str
+    data: DetalleUsuarioResponseData
