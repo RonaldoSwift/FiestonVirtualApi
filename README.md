@@ -66,6 +66,17 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | GET    | `/items/{id}`   | Obtener un item por id        |
 | PUT    | `/items/{id}`   | Actualizar un item por id     |
 | DELETE | `/items/{id}`   | Eliminar un item por id       |
+| POST   | `/consulta_codigo.php` | Validar un código de invitación |
+| POST   | `/detalle_usuario.php` | Obtener el detalle de un usuario |
+| POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
+
+### Ejemplo de request para consultar el detalle de un evento
+
+```json
+{
+  "idEvent": 1
+}
+```
 
 ### Ejemplo de request para crear un item
 

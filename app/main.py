@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException
 from app.schemas import (
     ConsultaCodigoRequest,
     ConsultaCodigoResponse,
+    DetalleEventoRequest,
+    DetalleEventoResponse,
     DetalleUsuarioRequest,
     DetalleUsuarioResponse,
     ItemRequest,
@@ -48,6 +50,20 @@ users_db = {
         "userLikesPhotos": 0,
         "userLikesVideos": 0,
         "userRanking": 0,
+    }
+}
+
+events_db = {
+    1: {
+        "eventHost": "Organizador del evento",
+        "eventImagePrize": "",
+        "eventLogo": "",
+        "eventName": "Evento de prueba",
+        "eventPrize": "Premio del evento",
+        "eventStartDate": "2026-01-01",
+        "eventStatus": 1,
+        "eventWelcomeText": "Bienvenido al evento.",
+        "idEvent": 1,
     }
 }
 
@@ -157,4 +173,29 @@ def detalle_usuario(request: DetalleUsuarioRequest) -> DetalleUsuarioResponse:
     return DetalleUsuarioResponse(
         message="Usuario encontrado",
         data={"user": user},
+    )
+
+
+@app.post(
+    "/detalle_evento.php",
+    response_model=DetalleEventoResponse,
+    tags=["detalle_evento"],
+)
+def detalle_evento(request: DetalleEventoRequest) -> DetalleEventoResponse:
+    """Devuelve el detalle de bienvenida del evento."""
+
+    event = events_db.get(request.idEvent)
+    if event is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    return DetalleEventoResponse(
+        message="Evento encontrado",
+        data={"event": event},
     )

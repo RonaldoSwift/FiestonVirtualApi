@@ -46,7 +46,7 @@ class ConsultaCodigoResponse(BaseModel):
     data: ConsultaCodigoData
     message: str
 
-#DETALLE DE USUARIO 
+#DETALLE DE USUARI
 
 class DetalleUsuarioRequest(BaseModel):
     """Datos que el cliente envía para consultar un usuario."""
@@ -80,3 +80,32 @@ class DetalleUsuarioResponse(BaseModel):
     """Respuesta exitosa de la consulta de usuario."""
     message: str
     data: DetalleUsuarioResponseData
+
+
+class DetalleEventoRequest(BaseModel):
+    """Datos que el cliente envía para consultar un evento."""
+    idEvent: int = Field(..., examples=[1])
+
+
+class DetalleEventoEvent(BaseModel):
+    """Información de bienvenida del evento."""
+    eventHost: str
+    eventImagePrize: str
+    eventLogo: str
+    eventName: str
+    eventPrize: str
+    eventStartDate: str
+    eventStatus: int
+    eventWelcomeText: str
+    idEvent: int
+
+
+class DetalleEventoResponseData(BaseModel):
+    """Contenedor del detalle del evento."""
+    event: DetalleEventoEvent
+
+
+class DetalleEventoResponse(BaseModel):
+    """Respuesta exitosa del detalle del evento."""
+    data: DetalleEventoResponseData
+    message: str
