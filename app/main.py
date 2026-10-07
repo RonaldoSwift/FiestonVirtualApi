@@ -1,6 +1,6 @@
 """Aplicación FastAPI de ejemplo: CRUD simple de items en memoria."""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 #Importamos los modelos Pydantic desde el archivo schemas.py
 from app.schemas import (
@@ -12,6 +12,7 @@ from app.schemas import (
     DetalleUsuarioResponse,
     ItemRequest,
     ItemResponse,
+    SelfieResponse,
 )
 
 app = FastAPI(
@@ -66,6 +67,9 @@ events_db = {
         "idEvent": 1,
     }
 }
+
+selfie_posts_db: dict[int, dict[str, int | str]] = {}
+next_post_id = 1
 
 
 @app.get("/", tags=["health"])
@@ -173,6 +177,45 @@ def detalle_usuario(request: DetalleUsuarioRequest) -> DetalleUsuarioResponse:
     return DetalleUsuarioResponse(
         message="Usuario encontrado",
         data={"user": user},
+    )
+
+
+@app.post(
+    "/selfie.php",
+    response_model=SelfieResponse,
+    tags=["selfie"],
+)
+async def selfie(
+    file: UploadFile = File(...),
+    idUser: int = Form(...),
+    postType: int = Form(...),
+) -> SelfieResponse:
+    """Registra la foto de perfil enviada por un usuario."""
+    global next_post_id
+
+    if users_db.get(idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El usuario solicitado no existe",
+        )
+
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="El archivo de la foto de perfil es obligatorio",
+        )
+
+    post = {
+        "idPost": next_post_id,
+        "postFile": file.filename,
+        "postType": postType,
+    }
+    selfie_posts_db[next_post_id] = post
+    next_post_id += 1
+
+    return SelfieResponse(
+        data={"post": post},
+        message="Foto de perfil subida correctamente",
     )
 
 
