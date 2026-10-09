@@ -68,6 +68,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | DELETE | `/items/{id}`   | Eliminar un item por id       |
 | POST   | `/consulta_codigo.php` | Validar un código de invitación |
 | POST   | `/detalle_usuario.php` | Obtener el detalle de un usuario |
+| POST   | `/selfie.php`           | Subir la foto de perfil de un usuario |
 | POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
 
 ### Ejemplo de request para consultar el detalle de un evento
