@@ -12,6 +12,8 @@ from app.schemas import (
     DetalleUsuarioResponse,
     ItemRequest,
     ItemResponse,
+    RegistrarTokenRequest,
+    RegistrarTokenResponse,
     SelfieResponse,
 )
 
@@ -68,6 +70,7 @@ events_db = {
     }
 }
 
+push_tokens_db: dict[int, str] = {}
 selfie_posts_db: dict[int, dict[str, int | str]] = {}
 next_post_id = 1
 
@@ -177,6 +180,41 @@ def detalle_usuario(request: DetalleUsuarioRequest) -> DetalleUsuarioResponse:
     return DetalleUsuarioResponse(
         message="Usuario encontrado",
         data={"user": user},
+    )
+
+
+@app.post(
+    "/registrar_tokens.php",
+    response_model=RegistrarTokenResponse,
+    tags=["registrar_tokens"],
+)
+def registrar_token(request: RegistrarTokenRequest) -> RegistrarTokenResponse:
+    """Registra o actualiza el token FCM de un usuario."""
+    if users_db.get(request.idUser) is None:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Usuario inválido",
+                "message": "El usuario solicitado no existe",
+            },
+        )
+
+    if not request.token.strip():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Token inválido",
+                "message": "El token FCM es obligatorio",
+            },
+        )
+
+    push_tokens_db[request.idUser] = request.token
+
+    return RegistrarTokenResponse(
+        data={"rpta": True},
+        message="Token FCM registrado correctamente",
     )
 
 

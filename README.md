@@ -68,6 +68,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | DELETE | `/items/{id}`   | Eliminar un item por id       |
 | POST   | `/consulta_codigo.php` | Validar un código de invitación |
 | POST   | `/detalle_usuario.php` | Obtener el detalle de un usuario |
+| POST   | `/registrar_tokens.php` | Registrar el token push FCM de un usuario |
 | POST   | `/selfie.php`           | Subir la foto de perfil de un usuario |
 | POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
 
@@ -76,6 +77,15 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 ```json
 {
   "idEvent": 1
+}
+```
+
+### Ejemplo de request para registrar un token push
+
+```json
+{
+  "idUser": 1,
+  "token": "token-fcm-del-dispositivo"
 }
 ```
 

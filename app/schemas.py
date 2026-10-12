@@ -127,3 +127,21 @@ class DetalleEventoResponse(BaseModel):
     """Respuesta exitosa del detalle del evento."""
     data: DetalleEventoResponseData
     message: str
+
+
+#REGISTRAR TOKENS
+class RegistrarTokenRequest(BaseModel):
+    """Datos que el cliente envía para registrar su token FCM."""
+    idUser: int = Field(..., examples=[1])
+    token: str = Field(..., examples=["token-fcm-del-dispositivo"])
+
+
+class RegistrarTokenResponseData(BaseModel):
+    """Resultado del registro del token FCM."""
+    rpta: bool
+
+
+class RegistrarTokenResponse(BaseModel):
+    """Respuesta exitosa del registro del token FCM."""
+    data: RegistrarTokenResponseData
+    message: str
