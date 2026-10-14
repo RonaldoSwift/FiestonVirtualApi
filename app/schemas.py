@@ -150,10 +150,8 @@ class RegistrarTokenResponse(BaseModel):
 #SERVICIO_GALERIA
 class GaleriaRequest(BaseModel):
     """Filtros para consultar la galería de un evento."""
-    idUser: int = Field(..., examples=[1])
     idEvent: int = Field(..., examples=[1])
     postStatus: int = Field(..., examples=[1])
-    idPost: int | None = Field(default=None, examples=[None])
 
 
 class GaleriaPost(BaseModel):

@@ -94,10 +94,8 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 
 ```json
 {
-  "idUser": 1,
   "idEvent": 1,
-  "postStatus": 1,
-  "idPost": null
+  "postStatus": 1
 }
 ```
 
