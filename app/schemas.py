@@ -145,3 +145,32 @@ class RegistrarTokenResponse(BaseModel):
     """Respuesta exitosa del registro del token FCM."""
     data: RegistrarTokenResponseData
     message: str
+
+
+#SERVICIO_GALERIA
+class GaleriaRequest(BaseModel):
+    """Filtros para consultar la galería de un evento."""
+    idUser: int = Field(..., examples=[1])
+    idEvent: int = Field(..., examples=[1])
+    postStatus: int = Field(..., examples=[1])
+    idPost: int | None = Field(default=None, examples=[None])
+
+
+class GaleriaPost(BaseModel):
+    """Publicación disponible en la galería."""
+    idPost: int
+    postFile: str
+    postStatus: int
+    postType: int
+    preview: str
+
+
+class GaleriaResponseData(BaseModel):
+    """Contenedor de las publicaciones de la galería."""
+    posts: list[GaleriaPost]
+
+
+class GaleriaResponse(BaseModel):
+    """Respuesta exitosa de la consulta de galería."""
+    data: GaleriaResponseData
+    message: str
