@@ -10,6 +10,8 @@ from app.schemas import (
     DetalleEventoResponse,
     DetalleUsuarioRequest,
     DetalleUsuarioResponse,
+    GaleriaRequest,
+    GaleriaResponse,
     ItemRequest,
     ItemResponse,
     RegistrarTokenRequest,
@@ -73,6 +75,24 @@ events_db = {
 push_tokens_db: dict[int, str] = {}
 selfie_posts_db: dict[int, dict[str, int | str]] = {}
 next_post_id = 1
+gallery_posts_db: list[dict[str, int | str]] = [
+    {
+        "idPost": 1,
+        "idEvent": 1,
+        "postFile": "https://picsum.photos/id/1015/800/600",
+        "postStatus": 1,
+        "postType": 1,
+        "preview": "https://picsum.photos/id/1015/300/200",
+    },
+    {
+        "idPost": 2,
+        "idEvent": 1,
+        "postFile": "https://picsum.photos/id/1016/800/600",
+        "postStatus": 1,
+        "postType": 1,
+        "preview": "https://picsum.photos/id/1016/300/200",
+    },
+]
 
 
 @app.get("/", tags=["health"])
@@ -279,4 +299,36 @@ def detalle_evento(request: DetalleEventoRequest) -> DetalleEventoResponse:
     return DetalleEventoResponse(
         message="Evento encontrado",
         data={"event": event},
+    )
+
+# SERVICIO_GALERIA
+@app.post(
+    "/galeria.php",
+    response_model=GaleriaResponse,
+    tags=["galeria"],
+)
+def galeria(request: GaleriaRequest) -> GaleriaResponse:
+    """Devuelve las publicaciones de la galería filtradas por evento y estado."""
+
+    event = events_db.get(request.idEvent)
+    if event is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    posts = [
+        post
+        for post in gallery_posts_db
+        if post["idEvent"] == request.idEvent
+        and post["postStatus"] == request.postStatus
+    ]
+
+    return GaleriaResponse(
+        data={"posts": posts},
+        message="Galería consultada correctamente",
     )

@@ -71,6 +71,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/registrar_tokens.php` | Registrar el token push FCM de un usuario |
 | POST   | `/selfie.php`           | Subir la foto de perfil de un usuario |
 | POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
+| POST   | `/galeria.php`          | Obtener la galería de fotos y videos de un evento |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -86,6 +87,15 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 {
   "idUser": 1,
   "token": "token-fcm-del-dispositivo"
+}
+```
+
+### Ejemplo de request para consultar la galería
+
+```json
+{
+  "idEvent": 1,
+  "postStatus": 1
 }
 ```
 
