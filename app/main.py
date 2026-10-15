@@ -8,6 +8,8 @@ from app.schemas import (
     ConsultaCodigoResponse,
     DetalleEventoRequest,
     DetalleEventoResponse,
+    DetallePublicacionRequest,
+    DetallePublicacionResponse,
     DetalleUsuarioRequest,
     DetalleUsuarioResponse,
     GaleriaRequest,
@@ -80,6 +82,9 @@ gallery_posts_db: list[dict[str, int | str]] = [
         "idPost": 1,
         "idEvent": 1,
         "postFile": "https://picsum.photos/id/1015/800/600",
+        "postTitle": "Publicación de prueba",
+        "postLike": False,
+        "postLikeCount": 0,
         "postStatus": 1,
         "postType": 1,
         "preview": "https://picsum.photos/id/1015/300/200",
@@ -88,6 +93,9 @@ gallery_posts_db: list[dict[str, int | str]] = [
         "idPost": 2,
         "idEvent": 1,
         "postFile": "https://picsum.photos/id/1016/800/600",
+        "postTitle": "Segunda publicación de prueba",
+        "postLike": False,
+        "postLikeCount": 0,
         "postStatus": 1,
         "postType": 1,
         "preview": "https://picsum.photos/id/1016/300/200",
@@ -331,4 +339,59 @@ def galeria(request: GaleriaRequest) -> GaleriaResponse:
     return GaleriaResponse(
         data={"posts": posts},
         message="Galería consultada correctamente",
+    )
+
+# DETALLE DE PUBLICACIÓN
+@app.post(
+    "/detalle_publicacion.php",
+    response_model=DetallePublicacionResponse,
+    tags=["detalle_publicacion"],
+)
+def detalle_publicacion(
+    request: DetallePublicacionRequest,
+) -> DetallePublicacionResponse:
+    """Devuelve el detalle de una publicación para un usuario en sesión."""
+
+    user = users_db.get(request.idUserSesion)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    post = next(
+        (post for post in gallery_posts_db if post["idPost"] == request.idPost),
+        None,
+    )
+    if post is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Publicación no encontrada",
+                "message": "La publicación solicitada no existe",
+            },
+        )
+
+    return DetallePublicacionResponse(
+        data={
+            "user": {
+                "userName": user["userName"],
+                "userImage": user["avatar"],
+            },
+            "post": {
+                "idPost": post["idPost"],
+                "postFile": post["postFile"],
+                "postLike": post["postLike"],
+                "postLikeCount": post["postLikeCount"],
+                "postStatus": post["postStatus"],
+                "postTitle": post["postTitle"],
+                "postType": post["postType"],
+            },
+        },
+        message="Detalle de publicación consultado correctamente",
     )

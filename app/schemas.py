@@ -172,3 +172,39 @@ class GaleriaResponse(BaseModel):
     """Respuesta exitosa de la consulta de galería."""
     data: GaleriaResponseData
     message: str
+
+# DETALLE DE PUBLICACIÓN
+
+class DetallePublicacionRequest(BaseModel):
+    """Datos para consultar el detalle de una publicación."""
+    idUserSesion: int = Field(..., examples=[1])
+    idPost: int = Field(..., examples=[1])
+
+
+class DetallePublicacionUser(BaseModel):
+    """Información del autor de la publicación."""
+    userName: str
+    userImage: str
+
+
+class DetallePublicacionPost(BaseModel):
+    """Información detallada de una publicación."""
+    idPost: int
+    postFile: str
+    postLike: bool
+    postLikeCount: int
+    postStatus: int
+    postTitle: str
+    postType: int
+
+
+class DetallePublicacionResponseData(BaseModel):
+    """Datos del usuario y de la publicación."""
+    user: DetallePublicacionUser
+    post: DetallePublicacionPost
+
+
+class DetallePublicacionResponse(BaseModel):
+    """Respuesta del servicio de detalle de publicación."""
+    data: DetallePublicacionResponseData
+    message: str

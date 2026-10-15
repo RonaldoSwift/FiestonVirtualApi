@@ -72,6 +72,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/selfie.php`           | Subir la foto de perfil de un usuario |
 | POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
 | POST   | `/galeria.php`          | Obtener la galería de fotos y videos de un evento |
+| POST   | `/detalle_publicacion.php` | Obtener el detalle de una publicación |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -96,6 +97,15 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 {
   "idEvent": 1,
   "postStatus": 1
+}
+```
+
+### Ejemplo de request para consultar el detalle de una publicación
+
+```json
+{
+  "idUserSesion": 1,
+  "idPost": 1
 }
 ```
 
