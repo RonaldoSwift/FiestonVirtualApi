@@ -16,6 +16,7 @@ from app.schemas import (
     GaleriaResponse,
     ItemRequest,
     ItemResponse,
+    PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
     SelfieResponse,
@@ -76,7 +77,7 @@ events_db = {
 
 push_tokens_db: dict[int, str] = {}
 selfie_posts_db: dict[int, dict[str, int | str]] = {}
-next_post_id = 1
+next_post_id = 3
 gallery_posts_db: list[dict[str, int | str]] = [
     {
         "idPost": 1,
@@ -282,6 +283,72 @@ async def selfie(
     return SelfieResponse(
         data={"post": post},
         message="Foto de perfil subida correctamente",
+    )
+
+
+@app.post(
+    "/publicaciones.php",
+    response_model=PublicacionResponse,
+    tags=["publicaciones"],
+)
+async def publicaciones(
+    file: UploadFile = File(...),
+    idUser: int = Form(...),
+    idEvent: int = Form(...),
+    postType: int = Form(...),
+    postTitle: str = Form(...),
+) -> PublicacionResponse:
+    """Registra una foto o video en la galería del evento."""
+    global next_post_id
+
+    if users_db.get(idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El usuario solicitado no existe",
+        )
+
+    if events_db.get(idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El evento solicitado no existe",
+        )
+
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="El archivo de la publicación es obligatorio",
+        )
+
+    if not postTitle.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="El título de la publicación es obligatorio",
+        )
+
+    post = {
+        "idPost": next_post_id,
+        "idEvent": idEvent,
+        "idUser": idUser,
+        "postFile": file.filename,
+        "postTitle": postTitle,
+        "postLike": False,
+        "postLikeCount": 0,
+        "postStatus": 1,
+        "postType": postType,
+        "preview": file.filename,
+    }
+    gallery_posts_db.append(post)
+    next_post_id += 1
+
+    return PublicacionResponse(
+        data={
+            "post": {
+                "idPost": post["idPost"],
+                "postFile": post["postFile"],
+                "postType": post["postType"],
+            }
+        },
+        message="Publicación subida correctamente",
     )
 
 

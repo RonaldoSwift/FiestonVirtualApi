@@ -99,7 +99,26 @@ class SelfieResponse(BaseModel):
     data: SelfieResponseData
     message: str
 
+# PUBLICACIÓN
+class PublicacionPost(BaseModel):
+    """Datos de la publicación creada."""
+    idPost: int
+    postFile: str
+    postType: int
 
+
+class PublicacionResponseData(BaseModel):
+    """Contenedor de la publicación creada."""
+    post: PublicacionPost
+
+
+class PublicacionResponse(BaseModel):
+    """Respuesta exitosa de la subida de una publicación."""
+    data: PublicacionResponseData
+    message: str
+
+
+# DETALLE DE EVENTO
 class DetalleEventoRequest(BaseModel):
     """Datos que el cliente envía para consultar un evento."""
     idEvent: int = Field(..., examples=[1])
