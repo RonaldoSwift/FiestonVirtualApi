@@ -8,12 +8,15 @@ from app.schemas import (
     ConsultaCodigoResponse,
     DetalleEventoRequest,
     DetalleEventoResponse,
+    DetallePublicacionRequest,
+    DetallePublicacionResponse,
     DetalleUsuarioRequest,
     DetalleUsuarioResponse,
     GaleriaRequest,
     GaleriaResponse,
     ItemRequest,
     ItemResponse,
+    PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
     SelfieResponse,
@@ -74,12 +77,15 @@ events_db = {
 
 push_tokens_db: dict[int, str] = {}
 selfie_posts_db: dict[int, dict[str, int | str]] = {}
-next_post_id = 1
+next_post_id = 3
 gallery_posts_db: list[dict[str, int | str]] = [
     {
         "idPost": 1,
         "idEvent": 1,
         "postFile": "https://picsum.photos/id/1015/800/600",
+        "postTitle": "Publicación de prueba",
+        "postLike": False,
+        "postLikeCount": 0,
         "postStatus": 1,
         "postType": 1,
         "preview": "https://picsum.photos/id/1015/300/200",
@@ -88,6 +94,9 @@ gallery_posts_db: list[dict[str, int | str]] = [
         "idPost": 2,
         "idEvent": 1,
         "postFile": "https://picsum.photos/id/1016/800/600",
+        "postTitle": "Segunda publicación de prueba",
+        "postLike": False,
+        "postLikeCount": 0,
         "postStatus": 1,
         "postType": 1,
         "preview": "https://picsum.photos/id/1016/300/200",
@@ -278,6 +287,72 @@ async def selfie(
 
 
 @app.post(
+    "/publicaciones.php",
+    response_model=PublicacionResponse,
+    tags=["publicaciones"],
+)
+async def publicaciones(
+    file: UploadFile = File(...),
+    idUser: int = Form(...),
+    idEvent: int = Form(...),
+    postType: int = Form(...),
+    postTitle: str = Form(...),
+) -> PublicacionResponse:
+    """Registra una foto o video en la galería del evento."""
+    global next_post_id
+
+    if users_db.get(idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El usuario solicitado no existe",
+        )
+
+    if events_db.get(idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El evento solicitado no existe",
+        )
+
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="El archivo de la publicación es obligatorio",
+        )
+
+    if not postTitle.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="El título de la publicación es obligatorio",
+        )
+
+    post = {
+        "idPost": next_post_id,
+        "idEvent": idEvent,
+        "idUser": idUser,
+        "postFile": file.filename,
+        "postTitle": postTitle,
+        "postLike": False,
+        "postLikeCount": 0,
+        "postStatus": 1,
+        "postType": postType,
+        "preview": file.filename,
+    }
+    gallery_posts_db.append(post)
+    next_post_id += 1
+
+    return PublicacionResponse(
+        data={
+            "post": {
+                "idPost": post["idPost"],
+                "postFile": post["postFile"],
+                "postType": post["postType"],
+            }
+        },
+        message="Publicación subida correctamente",
+    )
+
+
+@app.post(
     "/detalle_evento.php",
     response_model=DetalleEventoResponse,
     tags=["detalle_evento"],
@@ -331,4 +406,59 @@ def galeria(request: GaleriaRequest) -> GaleriaResponse:
     return GaleriaResponse(
         data={"posts": posts},
         message="Galería consultada correctamente",
+    )
+
+# DETALLE DE PUBLICACIÓN
+@app.post(
+    "/detalle_publicacion.php",
+    response_model=DetallePublicacionResponse,
+    tags=["detalle_publicacion"],
+)
+def detalle_publicacion(
+    request: DetallePublicacionRequest,
+) -> DetallePublicacionResponse:
+    """Devuelve el detalle de una publicación para un usuario en sesión."""
+
+    user = users_db.get(request.idUserSesion)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    post = next(
+        (post for post in gallery_posts_db if post["idPost"] == request.idPost),
+        None,
+    )
+    if post is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Publicación no encontrada",
+                "message": "La publicación solicitada no existe",
+            },
+        )
+
+    return DetallePublicacionResponse(
+        data={
+            "user": {
+                "userName": user["userName"],
+                "userImage": user["avatar"],
+            },
+            "post": {
+                "idPost": post["idPost"],
+                "postFile": post["postFile"],
+                "postLike": post["postLike"],
+                "postLikeCount": post["postLikeCount"],
+                "postStatus": post["postStatus"],
+                "postTitle": post["postTitle"],
+                "postType": post["postType"],
+            },
+        },
+        message="Detalle de publicación consultado correctamente",
     )

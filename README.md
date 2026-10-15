@@ -70,8 +70,10 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/detalle_usuario.php` | Obtener el detalle de un usuario |
 | POST   | `/registrar_tokens.php` | Registrar el token push FCM de un usuario |
 | POST   | `/selfie.php`           | Subir la foto de perfil de un usuario |
+| POST   | `/publicaciones.php`     | Subir una foto o video a la galería |
 | POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
 | POST   | `/galeria.php`          | Obtener la galería de fotos y videos de un evento |
+| POST   | `/detalle_publicacion.php` | Obtener el detalle de una publicación |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -98,6 +100,23 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
   "postStatus": 1
 }
 ```
+
+### Ejemplo de request para consultar el detalle de una publicación
+
+```json
+{
+  "idUserSesion": 1,
+  "idPost": 1
+}
+```
+
+`/publicaciones.php` recibe los datos como `multipart/form-data`:
+
+- `file`: archivo de la foto o video.
+- `idUser`: identificador del usuario.
+- `idEvent`: identificador del evento.
+- `postType`: tipo de publicación.
+- `postTitle`: título de la publicación.
 
 ### Ejemplo de request para crear un item
 
