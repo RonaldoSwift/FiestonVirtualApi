@@ -256,3 +256,21 @@ class ComentariosResponse(BaseModel):
     """Respuesta del listado de comentarios."""
     data: ComentariosResponseData
     message: str
+
+# AGREGAR COMENTARIO A PUBLICACIÓN
+class AgregarComentarioRequest(BaseModel):
+    """Datos para agregar un comentario a una publicación."""
+    idPost: int = Field(..., examples=[1])
+    idUserComment: int = Field(..., examples=[1])
+    comment: str = Field(..., examples=["Excelente publicación."])
+
+
+class AgregarComentarioResponseData(BaseModel):
+    """Contenedor del comentario agregado."""
+    comment: Comentario
+
+
+class AgregarComentarioResponse(BaseModel):
+    """Respuesta del servicio para agregar comentarios."""
+    data: AgregarComentarioResponseData
+    message: str
