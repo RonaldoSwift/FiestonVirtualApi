@@ -6,6 +6,8 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from app.schemas import (
     ConsultaCodigoRequest,
     ConsultaCodigoResponse,
+    AgregarComentarioRequest,
+    AgregarComentarioResponse,
     ComentariosRequest,
     ComentariosResponse,
     DetalleEventoRequest,
@@ -118,6 +120,7 @@ comments_db: dict[int, list[dict[str, int | str]]] = {
         }
     ]
 }
+next_comment_id = 2
 
 
 @app.get("/", tags=["health"])
@@ -506,4 +509,70 @@ def comentarios(request: ComentariosRequest) -> ComentariosResponse:
     return ComentariosResponse(
         data={"comments": comments_db.get(request.idPost, [])},
         message="Comentarios consultados correctamente",
+    )
+
+# AGREGAR COMENTARIO A PUBLICACIÓN
+@app.post(
+    "/agregar_comentarios.php",
+    response_model=AgregarComentarioResponse,
+    tags=["comentarios"],
+)
+def agregar_comentario(
+    request: AgregarComentarioRequest,
+) -> AgregarComentarioResponse:
+    """Agrega un comentario a una publicación."""
+    global next_comment_id
+
+    if not request.comment.strip():
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Comentario inválido",
+                "message": "El comentario es obligatorio",
+            },
+        )
+
+    user = users_db.get(request.idUserComment)
+    if user is None:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Usuario inválido",
+                "message": "El usuario del comentario no existe",
+            },
+        )
+
+    post = next(
+        (post for post in gallery_posts_db if post["idPost"] == request.idPost),
+        None,
+    )
+    if post is None:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Publicación inválida",
+                "message": "La publicación solicitada no existe",
+            },
+        )
+
+    new_comment = {
+        "comment": request.comment.strip(),
+        "commentRegistrationDate": "2026-01-01",
+        "commentStatus": 1,
+        "idComment": next_comment_id,
+        "idUserComment": request.idUserComment,
+        "userComment": (
+            f"{user['userName']} {user['userLastName']} {user['userSurName']}"
+        ).strip(),
+        "avatar": user["avatar"],
+    }
+    comments_db.setdefault(request.idPost, []).append(new_comment)
+    next_comment_id += 1
+
+    return AgregarComentarioResponse(
+        data={"comment": new_comment},
+        message="Comentario agregado correctamente",
     )
