@@ -74,6 +74,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/detalle_evento.php`  | Obtener el detalle de bienvenida de un evento |
 | POST   | `/galeria.php`          | Obtener la galería de fotos y videos de un evento |
 | POST   | `/detalle_publicacion.php` | Obtener el detalle de una publicación |
+| POST   | `/comentarios.php` | Obtener los comentarios de una publicación |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -106,6 +107,14 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 ```json
 {
   "idUserSesion": 1,
+  "idPost": 1
+}
+```
+
+### Ejemplo de request para consultar los comentarios de una publicación
+
+```json
+{
   "idPost": 1
 }
 ```
