@@ -227,3 +227,32 @@ class DetallePublicacionResponse(BaseModel):
     """Respuesta del servicio de detalle de publicación."""
     data: DetallePublicacionResponseData
     message: str
+
+
+# COMENTARIOS DE PUBLICACIÓN
+
+class ComentariosRequest(BaseModel):
+    """Datos para consultar los comentarios de una publicación."""
+    idPost: int = Field(..., examples=[1])
+
+
+class Comentario(BaseModel):
+    """Comentario publicado en una publicación."""
+    comment: str
+    commentRegistrationDate: str
+    commentStatus: int
+    idComment: int
+    idUserComment: int
+    userComment: str
+    avatar: str
+
+
+class ComentariosResponseData(BaseModel):
+    """Contenedor de los comentarios de una publicación."""
+    comments: list[Comentario]
+
+
+class ComentariosResponse(BaseModel):
+    """Respuesta del listado de comentarios."""
+    data: ComentariosResponseData
+    message: str

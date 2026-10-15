@@ -6,6 +6,8 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from app.schemas import (
     ConsultaCodigoRequest,
     ConsultaCodigoResponse,
+    ComentariosRequest,
+    ComentariosResponse,
     DetalleEventoRequest,
     DetalleEventoResponse,
     DetallePublicacionRequest,
@@ -102,6 +104,20 @@ gallery_posts_db: list[dict[str, int | str]] = [
         "preview": "https://picsum.photos/id/1016/300/200",
     },
 ]
+
+comments_db: dict[int, list[dict[str, int | str]]] = {
+    1: [
+        {
+            "comment": "Excelente publicación.",
+            "commentRegistrationDate": "2026-01-01",
+            "commentStatus": 1,
+            "idComment": 1,
+            "idUserComment": 1,
+            "userComment": "Usuario De Prueba",
+            "avatar": "",
+        }
+    ]
+}
 
 
 @app.get("/", tags=["health"])
@@ -461,4 +477,33 @@ def detalle_publicacion(
             },
         },
         message="Detalle de publicación consultado correctamente",
+    )
+
+
+# COMENTARIOS DE PUBLICACIÓN
+@app.post(
+    "/comentarios.php",
+    response_model=ComentariosResponse,
+    tags=["comentarios"],
+)
+def comentarios(request: ComentariosRequest) -> ComentariosResponse:
+    """Devuelve los comentarios de una publicación."""
+
+    post = next(
+        (post for post in gallery_posts_db if post["idPost"] == request.idPost),
+        None,
+    )
+    if post is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Publicación no encontrada",
+                "message": "La publicación solicitada no existe",
+            },
+        )
+
+    return ComentariosResponse(
+        data={"comments": comments_db.get(request.idPost, [])},
+        message="Comentarios consultados correctamente",
     )
