@@ -76,6 +76,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/detalle_publicacion.php` | Obtener el detalle de una publicación |
 | POST   | `/comentarios.php` | Obtener los comentarios de una publicación |
 | POST   | `/agregar_comentarios.php` | Agregar un comentario a una publicación |
+| POST   | `/likes.php` | Agregar o quitar un like de una publicación |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -127,6 +128,15 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
   "idPost": 1,
   "idUserComment": 1,
   "comment": "Excelente publicación."
+}
+```
+
+### Ejemplo de request para agregar o quitar un like
+
+```json
+{
+  "idUserSesion": 1,
+  "idPost": 1
 }
 ```
 

@@ -274,3 +274,21 @@ class AgregarComentarioResponse(BaseModel):
     """Respuesta del servicio para agregar comentarios."""
     data: AgregarComentarioResponseData
     message: str
+
+
+# LIKE DE PUBLICACIÓN
+class LikeRequest(BaseModel):
+    """Datos para agregar o quitar un like de una publicación."""
+    idUserSesion: int = Field(..., examples=[1])
+    idPost: int = Field(..., examples=[1])
+
+
+class LikeResponseData(BaseModel):
+    """Resultado del like del usuario."""
+    userLikes: int
+
+
+class LikeResponse(BaseModel):
+    """Respuesta del servicio para agregar o quitar likes."""
+    data: LikeResponseData
+    message: str
