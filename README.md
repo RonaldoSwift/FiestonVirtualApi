@@ -78,6 +78,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/agregar_comentarios.php` | Agregar un comentario a una publicación |
 | POST   | `/likes.php` | Agregar o quitar un like de una publicación |
 | POST   | `/trivias.php` | Obtener las preguntas de trivia de un evento |
+| POST   | `/respuesta_trivia.php` | Registrar una respuesta de trivia y obtener el puntaje total |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -120,6 +121,15 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 {
   "idEvent": 1,
   "questionStatus": 1,
+  "idUserSession": 1
+}
+```
+
+### Ejemplo de request para responder una trivia
+
+```json
+{
+  "idAlternative": 1,
   "idUserSession": 1
 }
 ```

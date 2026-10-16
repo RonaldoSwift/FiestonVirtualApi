@@ -330,3 +330,21 @@ class TriviasResponse(BaseModel):
     """Respuesta del listado de preguntas de trivia."""
     data: TriviasResponseData
     message: str
+
+
+# RESPUESTA DE TRIVIA
+class RespuestaTriviaRequest(BaseModel):
+    """Datos para registrar la respuesta de una trivia."""
+    idAlternative: int = Field(..., examples=[1])
+    idUserSession: int = Field(..., examples=[1])
+
+
+class RespuestaTriviaResponseData(BaseModel):
+    """Puntaje total actualizado del usuario."""
+    userTotalScore: int
+
+
+class RespuestaTriviaResponse(BaseModel):
+    """Respuesta del registro de una respuesta de trivia."""
+    data: RespuestaTriviaResponseData
+    message: str

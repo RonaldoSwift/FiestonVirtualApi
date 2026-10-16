@@ -25,6 +25,8 @@ from app.schemas import (
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
+    RespuestaTriviaRequest,
+    RespuestaTriviaResponse,
     SelfieResponse,
     TriviasRequest,
     TriviasResponse,
@@ -110,6 +112,7 @@ gallery_posts_db: list[dict[str, int | str]] = [
         "preview": "https://picsum.photos/id/1016/300/200",
     },
 ]
+trivia_answers_db: set[tuple[int, int]] = set()
 
 comments_db: dict[int, list[dict[str, int | str]]] = {
     1: [
@@ -497,6 +500,67 @@ def trivias(request: TriviasRequest) -> TriviasResponse:
         data={"question": questions},
         message="Trivias consultadas correctamente",
     )
+
+
+@app.post(
+    "/respuesta_trivia.php",
+    response_model=RespuestaTriviaResponse,
+    tags=["trivias"],
+)
+def respuesta_trivia(
+    request: RespuestaTriviaRequest,
+) -> RespuestaTriviaResponse:
+    """Registra una respuesta y actualiza el puntaje total del usuario."""
+
+    user = users_db.get(request.idUserSession)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    selected_question = next(
+        (
+            question
+            for question in trivias_db
+            if any(
+                alternative["idAlternative"] == request.idAlternative
+                for alternative in question["questionAlternative"]
+            )
+        ),
+        None,
+    )
+    if selected_question is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Alternativa no encontrada",
+                "message": "La alternativa solicitada no existe",
+            },
+        )
+
+    question_id = selected_question["idQuestion"]
+    answer_key = (request.idUserSession, question_id)
+    if answer_key not in trivia_answers_db:
+        selected_alternative = next(
+            alternative
+            for alternative in selected_question["questionAlternative"]
+            if alternative["idAlternative"] == request.idAlternative
+        )
+        if selected_alternative["alternativeAnswer"]:
+            user["userTotalScore"] += selected_question["questionScore"]
+        trivia_answers_db.add(answer_key)
+
+    return RespuestaTriviaResponse(
+        data={"userTotalScore": user["userTotalScore"]},
+        message="Respuesta de trivia registrada correctamente",
+    )
+
 
 # DETALLE DE PUBLICACIÓN
 @app.post(
