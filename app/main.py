@@ -20,6 +20,8 @@ from app.schemas import (
     GaleriaResponse,
     ItemRequest,
     ItemResponse,
+    LikeRequest,
+    LikeResponse,
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
@@ -121,6 +123,7 @@ comments_db: dict[int, list[dict[str, int | str]]] = {
     ]
 }
 next_comment_id = 2
+likes_db: dict[int, set[int]] = {}
 
 
 @app.get("/", tags=["health"])
@@ -576,3 +579,58 @@ def agregar_comentario(
         data={"comment": new_comment},
         message="Comentario agregado correctamente",
     )
+
+
+# LIKE DE PUBLICACIÓN
+@app.post(
+    "/likes.php",
+    response_model=LikeResponse,
+    tags=["likes"],
+)
+def like_publicacion(request: LikeRequest) -> LikeResponse:
+    """Agrega o quita el like de un usuario en una publicación."""
+
+    if users_db.get(request.idUserSesion) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    post = next(
+        (post for post in gallery_posts_db if post["idPost"] == request.idPost),
+        None,
+    )
+    if post is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Publicación no encontrada",
+                "message": "La publicación solicitada no existe",
+            },
+        )
+
+    post_likes = likes_db.setdefault(request.idPost, set())
+    if request.idUserSesion in post_likes:
+        post_likes.remove(request.idUserSesion)
+        user_likes = 0
+        message = "Like eliminado correctamente"
+    else:
+        post_likes.add(request.idUserSesion)
+        user_likes = 1
+        message = "Like agregado correctamente"
+
+    post["postLikeCount"] = len(post_likes)
+    post["postLike"] = bool(post_likes)
+
+    return LikeResponse(
+        data={"userLikes": user_likes},
+        message=message,
+    )
+
+
+    
