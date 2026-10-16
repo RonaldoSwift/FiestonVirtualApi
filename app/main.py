@@ -26,6 +26,8 @@ from app.schemas import (
     RegistrarTokenRequest,
     RegistrarTokenResponse,
     SelfieResponse,
+    TriviasRequest,
+    TriviasResponse,
 )
 
 app = FastAPI(
@@ -124,6 +126,30 @@ comments_db: dict[int, list[dict[str, int | str]]] = {
 }
 next_comment_id = 2
 likes_db: dict[int, set[int]] = {}
+trivias_db: list[dict[str, object]] = [
+    {
+        "idEvent": 1,
+        "idQuestion": 1,
+        "question": "¿Cuál es la capital de Francia?",
+        "questionAlternative": [
+            {
+                "alternativeAnswer": True,
+                "alternativeDescription": "París",
+                "idAlternative": 1,
+            },
+            {
+                "alternativeAnswer": False,
+                "alternativeDescription": "Madrid",
+                "idAlternative": 2,
+            },
+        ],
+        "questionImage": "",
+        "questionName": "Capitales del mundo",
+        "questionScore": 10,
+        "questionStatus": 1,
+        "questionType": "single",
+    }
+]
 
 
 @app.get("/", tags=["health"])
@@ -430,6 +456,48 @@ def galeria(request: GaleriaRequest) -> GaleriaResponse:
         message="Galería consultada correctamente",
     )
 
+
+# SERVICIO DE TRIVIAS
+@app.post(
+    "/trivias.php",
+    response_model=TriviasResponse,
+    tags=["trivias"],
+)
+def trivias(request: TriviasRequest) -> TriviasResponse:
+    """Devuelve las preguntas de trivia de un evento filtradas por estado."""
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    if users_db.get(request.idUserSession) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    questions = [
+        question
+        for question in trivias_db
+        if question["idEvent"] == request.idEvent
+        and question["questionStatus"] == request.questionStatus
+    ]
+
+    return TriviasResponse(
+        data={"question": questions},
+        message="Trivias consultadas correctamente",
+    )
+
 # DETALLE DE PUBLICACIÓN
 @app.post(
     "/detalle_publicacion.php",
@@ -631,6 +699,3 @@ def like_publicacion(request: LikeRequest) -> LikeResponse:
         data={"userLikes": user_likes},
         message=message,
     )
-
-
-    

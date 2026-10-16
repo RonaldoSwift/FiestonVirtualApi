@@ -292,3 +292,41 @@ class LikeResponse(BaseModel):
     """Respuesta del servicio para agregar o quitar likes."""
     data: LikeResponseData
     message: str
+
+
+# TRIVIAS
+class TriviasRequest(BaseModel):
+    """Filtros para consultar las preguntas de trivia de un evento."""
+    idEvent: int = Field(..., examples=[1])
+    questionStatus: int = Field(..., examples=[1])
+    idUserSession: int = Field(..., examples=[1])
+
+
+class TriviaAlternative(BaseModel):
+    """Alternativa de respuesta de una pregunta."""
+    alternativeAnswer: bool
+    alternativeDescription: str
+    idAlternative: int
+
+
+class TriviaQuestion(BaseModel):
+    """Pregunta de trivia disponible para el evento."""
+    idQuestion: int
+    question: str
+    questionAlternative: list[TriviaAlternative]
+    questionImage: str
+    questionName: str
+    questionScore: int
+    questionStatus: int
+    questionType: str
+
+
+class TriviasResponseData(BaseModel):
+    """Contenedor de las preguntas de trivia."""
+    question: list[TriviaQuestion]
+
+
+class TriviasResponse(BaseModel):
+    """Respuesta del listado de preguntas de trivia."""
+    data: TriviasResponseData
+    message: str
