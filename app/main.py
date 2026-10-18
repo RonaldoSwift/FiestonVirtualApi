@@ -22,6 +22,8 @@ from app.schemas import (
     ItemResponse,
     LikeRequest,
     LikeResponse,
+    MensajesChatRequest,
+    MensajesChatResponse,
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
@@ -151,6 +153,17 @@ trivias_db: list[dict[str, object]] = [
         "questionScore": 10,
         "questionStatus": 1,
         "questionType": "single",
+    }
+]
+chat_messages_db: list[dict[str, int | str]] = [
+    {
+        "idMessage": 1,
+        "idEvent": 1,
+        "idUserMessage": 1,
+        "messageRegistrationDate": "2026-01-01T10:00:00",
+        "messageText": "Bienvenidos al evento.",
+        "userImage": "",
+        "userMessage": "Usuario De Prueba",
     }
 ]
 
@@ -644,6 +657,47 @@ def comentarios(request: ComentariosRequest) -> ComentariosResponse:
     return ComentariosResponse(
         data={"comments": comments_db.get(request.idPost, [])},
         message="Comentarios consultados correctamente",
+    )
+
+
+# MENSAJES DE CHAT
+@app.post(
+    "/mensajes_chat.php",
+    response_model=MensajesChatResponse,
+    tags=["mensajes_chat"],
+)
+def mensajes_chat(request: MensajesChatRequest) -> MensajesChatResponse:
+    """Devuelve los mensajes del chat de un evento."""
+
+    if users_db.get(request.idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    messages = [
+        message
+        for message in chat_messages_db
+        if message["idEvent"] == request.idEvent
+    ]
+
+    return MensajesChatResponse(
+        data={"messages": messages},
+        message="Mensajes de chat consultados correctamente",
     )
 
 # AGREGAR COMENTARIO A PUBLICACIÓN

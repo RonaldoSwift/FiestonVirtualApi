@@ -348,3 +348,31 @@ class RespuestaTriviaResponse(BaseModel):
     """Respuesta del registro de una respuesta de trivia."""
     data: RespuestaTriviaResponseData
     message: str
+
+
+# MENSAJES DE CHAT
+class MensajesChatRequest(BaseModel):
+    """Datos para consultar los mensajes de chat de un evento."""
+    idUser: int = Field(..., examples=[1])
+    idEvent: int = Field(..., examples=[1])
+
+
+class MensajeChat(BaseModel):
+    """Mensaje publicado en el chat del evento."""
+    idMessage: int
+    idUserMessage: int
+    messageRegistrationDate: str
+    messageText: str
+    userImage: str
+    userMessage: str
+
+
+class MensajesChatResponseData(BaseModel):
+    """Contenedor de los mensajes del chat."""
+    messages: list[MensajeChat]
+
+
+class MensajesChatResponse(BaseModel):
+    """Respuesta del listado de mensajes de chat."""
+    data: MensajesChatResponseData
+    message: str
