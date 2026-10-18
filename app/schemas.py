@@ -376,3 +376,31 @@ class MensajesChatResponse(BaseModel):
     """Respuesta del listado de mensajes de chat."""
     data: MensajesChatResponseData
     message: str
+
+
+# RANKING DE USUARIOS
+class RankingRequest(BaseModel):
+    """Datos para consultar el ranking de usuarios de un evento."""
+    idUser: int = Field(..., examples=[1])
+    idEvent: int = Field(..., examples=[1])
+
+
+class RankingUser(BaseModel):
+    """Usuario incluido en el ranking del evento."""
+    idUserRanking: int
+    userRankingLogo: str
+    userRankingName: str
+    userRankingPosition: int
+    userRankingTotalScore: int
+
+
+class RankingResponseData(BaseModel):
+    """Ranking y puntaje del usuario de sesión."""
+    raking: list[RankingUser]
+    userTotalScore: str
+
+
+class RankingResponse(BaseModel):
+    """Respuesta del ranking de usuarios."""
+    data: RankingResponseData
+    message: str

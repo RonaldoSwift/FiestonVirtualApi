@@ -27,6 +27,8 @@ from app.schemas import (
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
+    RankingRequest,
+    RankingResponse,
     RespuestaTriviaRequest,
     RespuestaTriviaResponse,
     SelfieResponse,
@@ -699,6 +701,67 @@ def mensajes_chat(request: MensajesChatRequest) -> MensajesChatResponse:
         data={"messages": messages},
         message="Mensajes de chat consultados correctamente",
     )
+
+
+# RANKING DE USUARIOS
+@app.post(
+    "/ranking.php",
+    response_model=RankingResponse,
+    tags=["ranking"],
+)
+def ranking(request: RankingRequest) -> RankingResponse:
+    """Devuelve el ranking de puntajes de los usuarios de un evento."""
+
+    user = users_db.get(request.idUser)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    event_users = sorted(
+        (
+            event_user
+            for event_user in users_db.values()
+            if event_user["idEvent"] == request.idEvent
+        ),
+        key=lambda event_user: (-event_user["userTotalScore"], event_user["idUser"]),
+    )
+    ranking_users = [
+        {
+            "idUserRanking": event_user["idUser"],
+            "userRankingLogo": event_user["avatar"],
+            "userRankingName": (
+                f"{event_user['userName']} {event_user['userLastName']}"
+            ).strip(),
+            "userRankingPosition": position,
+            "userRankingTotalScore": event_user["userTotalScore"],
+        }
+        for position, event_user in enumerate(event_users, start=1)
+    ]
+
+    return RankingResponse(
+        data={
+            "raking": ranking_users,
+            "userTotalScore": str(user["userTotalScore"]),
+        },
+        message="Ranking consultado correctamente",
+    )
+
 
 # AGREGAR COMENTARIO A PUBLICACIÓN
 @app.post(
