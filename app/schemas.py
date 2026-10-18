@@ -404,3 +404,30 @@ class RankingResponse(BaseModel):
     """Respuesta del ranking de usuarios."""
     data: RankingResponseData
     message: str
+
+
+# LISTA DE PLAYLIST
+class ListaPlaylistRequest(BaseModel):
+    """Filtros para consultar las canciones de la playlist de un evento."""
+    idEvent: int = Field(..., examples=[1])
+    search: str = Field(default="", examples=["canción"])
+
+
+class PlaylistSong(BaseModel):
+    """Canción disponible en la playlist del evento."""
+    idPlaylist: int
+    playlistBand: str
+    playlistRegistrationDate: str
+    playlistSong: str
+    playlistStatus: bool
+
+
+class ListaPlaylistResponseData(BaseModel):
+    """Contenedor de las canciones de la playlist."""
+    playlist: list[PlaylistSong]
+
+
+class ListaPlaylistResponse(BaseModel):
+    """Respuesta del listado de playlist."""
+    data: ListaPlaylistResponseData
+    message: str
