@@ -22,9 +22,13 @@ from app.schemas import (
     ItemResponse,
     LikeRequest,
     LikeResponse,
+    MensajesChatRequest,
+    MensajesChatResponse,
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
+    RankingRequest,
+    RankingResponse,
     RespuestaTriviaRequest,
     RespuestaTriviaResponse,
     SelfieResponse,
@@ -151,6 +155,17 @@ trivias_db: list[dict[str, object]] = [
         "questionScore": 10,
         "questionStatus": 1,
         "questionType": "single",
+    }
+]
+chat_messages_db: list[dict[str, int | str]] = [
+    {
+        "idMessage": 1,
+        "idEvent": 1,
+        "idUserMessage": 1,
+        "messageRegistrationDate": "2026-01-01T10:00:00",
+        "messageText": "Bienvenidos al evento.",
+        "userImage": "",
+        "userMessage": "Usuario De Prueba",
     }
 ]
 
@@ -645,6 +660,108 @@ def comentarios(request: ComentariosRequest) -> ComentariosResponse:
         data={"comments": comments_db.get(request.idPost, [])},
         message="Comentarios consultados correctamente",
     )
+
+
+# MENSAJES DE CHAT
+@app.post(
+    "/mensajes_chat.php",
+    response_model=MensajesChatResponse,
+    tags=["mensajes_chat"],
+)
+def mensajes_chat(request: MensajesChatRequest) -> MensajesChatResponse:
+    """Devuelve los mensajes del chat de un evento."""
+
+    if users_db.get(request.idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    messages = [
+        message
+        for message in chat_messages_db
+        if message["idEvent"] == request.idEvent
+    ]
+
+    return MensajesChatResponse(
+        data={"messages": messages},
+        message="Mensajes de chat consultados correctamente",
+    )
+
+
+# RANKING DE USUARIOS
+@app.post(
+    "/ranking.php",
+    response_model=RankingResponse,
+    tags=["ranking"],
+)
+def ranking(request: RankingRequest) -> RankingResponse:
+    """Devuelve el ranking de puntajes de los usuarios de un evento."""
+
+    user = users_db.get(request.idUser)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario de sesión no existe",
+            },
+        )
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    event_users = sorted(
+        (
+            event_user
+            for event_user in users_db.values()
+            if event_user["idEvent"] == request.idEvent
+        ),
+        key=lambda event_user: (-event_user["userTotalScore"], event_user["idUser"]),
+    )
+    ranking_users = [
+        {
+            "idUserRanking": event_user["idUser"],
+            "userRankingLogo": event_user["avatar"],
+            "userRankingName": (
+                f"{event_user['userName']} {event_user['userLastName']}"
+            ).strip(),
+            "userRankingPosition": position,
+            "userRankingTotalScore": event_user["userTotalScore"],
+        }
+        for position, event_user in enumerate(event_users, start=1)
+    ]
+
+    return RankingResponse(
+        data={
+            "raking": ranking_users,
+            "userTotalScore": str(user["userTotalScore"]),
+        },
+        message="Ranking consultado correctamente",
+    )
+
 
 # AGREGAR COMENTARIO A PUBLICACIÓN
 @app.post(

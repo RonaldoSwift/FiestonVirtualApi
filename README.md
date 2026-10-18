@@ -79,6 +79,8 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/likes.php` | Agregar o quitar un like de una publicación |
 | POST   | `/trivias.php` | Obtener las preguntas de trivia de un evento |
 | POST   | `/respuesta_trivia.php` | Registrar una respuesta de trivia y obtener el puntaje total |
+| POST   | `/mensajes_chat.php` | Obtener los mensajes del chat de un evento |
+| POST   | `/ranking.php` | Obtener el ranking de puntajes de un evento |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -131,6 +133,24 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 {
   "idAlternative": 1,
   "idUserSession": 1
+}
+```
+
+### Ejemplo de request para consultar los mensajes del chat
+
+```json
+{
+  "idUser": 1,
+  "idEvent": 1
+}
+```
+
+### Ejemplo de request para consultar el ranking
+
+```json
+{
+  "idUser": 1,
+  "idEvent": 1
 }
 ```
 
