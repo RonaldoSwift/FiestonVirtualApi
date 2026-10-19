@@ -22,8 +22,12 @@ from app.schemas import (
     ItemResponse,
     LikeRequest,
     LikeResponse,
+    ListaPlaylistRequest,
+    ListaPlaylistResponse,
     MensajesChatRequest,
     MensajesChatResponse,
+    PedirCancionRequest,
+    PedirCancionResponse,
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
@@ -166,6 +170,16 @@ chat_messages_db: list[dict[str, int | str]] = [
         "messageText": "Bienvenidos al evento.",
         "userImage": "",
         "userMessage": "Usuario De Prueba",
+    }
+]
+playlist_db: list[dict[str, int | str | bool]] = [
+    {
+        "idPlaylist": 1,
+        "idEvent": 1,
+        "playlistBand": "Banda de prueba",
+        "playlistRegistrationDate": "2026-01-01",
+        "playlistSong": "Canción de prueba",
+        "playlistStatus": True,
     }
 ]
 
@@ -760,6 +774,86 @@ def ranking(request: RankingRequest) -> RankingResponse:
             "userTotalScore": str(user["userTotalScore"]),
         },
         message="Ranking consultado correctamente",
+    )
+
+
+# LISTA DE PLAYLIST
+@app.post(
+    "/lista_playlist.php",
+    response_model=ListaPlaylistResponse,
+    tags=["lista_playlist"],
+)
+def lista_playlist(request: ListaPlaylistRequest) -> ListaPlaylistResponse:
+    """Devuelve las canciones de la playlist de un evento."""
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    search = request.search.strip().casefold()
+    playlist = [
+        song
+        for song in playlist_db
+        if song["idEvent"] == request.idEvent
+        and (
+            not search
+            or search in str(song["playlistBand"]).casefold()
+            or search in str(song["playlistSong"]).casefold()
+        )
+    ]
+
+    return ListaPlaylistResponse(
+        data={"playlist": playlist},
+        message="Playlist consultada correctamente",
+    )
+
+
+# PEDIR CANCION
+@app.post(
+    "/pedir_cancion.php",
+    response_model=PedirCancionResponse,
+    tags=["pedir_cancion"],
+)
+def pedir_cancion(request: PedirCancionRequest) -> PedirCancionResponse:
+    """Solicita una canción de la playlist."""
+
+    if users_db.get(request.idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario solicitante no existe",
+            },
+        )
+
+    song = next(
+        (
+            playlist_song
+            for playlist_song in playlist_db
+            if playlist_song["idPlaylist"] == request.idPlaylist
+        ),
+        None,
+    )
+    if song is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Canción no encontrada",
+                "message": "La canción solicitada no existe",
+            },
+        )
+
+    return PedirCancionResponse(
+        data=song,
+        message="Canción solicitada correctamente",
     )
 
 
