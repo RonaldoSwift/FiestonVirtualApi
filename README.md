@@ -82,6 +82,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/mensajes_chat.php` | Obtener los mensajes del chat de un evento |
 | POST   | `/ranking.php` | Obtener el ranking de puntajes de un evento |
 | POST   | `/lista_playlist.php` | Obtener la lista de canciones de la playlist de un evento |
+| POST   | `/pedir_cancion.php` | Solicitar una canción de la playlist |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -161,6 +162,15 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 {
   "idEvent": 1,
   "search": "canción"
+}
+```
+
+### Ejemplo de request para pedir una canción
+
+```json
+{
+  "idUser": 1,
+  "idPlaylist": 1
 }
 ```
 

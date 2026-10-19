@@ -431,3 +431,16 @@ class ListaPlaylistResponse(BaseModel):
     """Respuesta del listado de playlist."""
     data: ListaPlaylistResponseData
     message: str
+
+
+# PEDIR CANCION
+class PedirCancionRequest(BaseModel):
+    """Datos para solicitar una canción de la playlist."""
+    idUser: int = Field(..., examples=[1])
+    idPlaylist: int = Field(..., examples=[1])
+
+
+class PedirCancionResponse(BaseModel):
+    """Respuesta de la solicitud de una canción."""
+    data: PlaylistSong
+    message: str

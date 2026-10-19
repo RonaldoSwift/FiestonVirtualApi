@@ -26,6 +26,8 @@ from app.schemas import (
     ListaPlaylistResponse,
     MensajesChatRequest,
     MensajesChatResponse,
+    PedirCancionRequest,
+    PedirCancionResponse,
     PublicacionResponse,
     RegistrarTokenRequest,
     RegistrarTokenResponse,
@@ -809,6 +811,49 @@ def lista_playlist(request: ListaPlaylistRequest) -> ListaPlaylistResponse:
     return ListaPlaylistResponse(
         data={"playlist": playlist},
         message="Playlist consultada correctamente",
+    )
+
+
+# PEDIR CANCION
+@app.post(
+    "/pedir_cancion.php",
+    response_model=PedirCancionResponse,
+    tags=["pedir_cancion"],
+)
+def pedir_cancion(request: PedirCancionRequest) -> PedirCancionResponse:
+    """Solicita una canción de la playlist."""
+
+    if users_db.get(request.idUser) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Usuario no encontrado",
+                "message": "El usuario solicitante no existe",
+            },
+        )
+
+    song = next(
+        (
+            playlist_song
+            for playlist_song in playlist_db
+            if playlist_song["idPlaylist"] == request.idPlaylist
+        ),
+        None,
+    )
+    if song is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Canción no encontrada",
+                "message": "La canción solicitada no existe",
+            },
+        )
+
+    return PedirCancionResponse(
+        data=song,
+        message="Canción solicitada correctamente",
     )
 
 
