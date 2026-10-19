@@ -444,3 +444,20 @@ class PedirCancionResponse(BaseModel):
     """Respuesta de la solicitud de una canción."""
     data: PlaylistSong
     message: str
+
+
+# CERRAR SESION
+class LogoutRequest(BaseModel):
+    """Datos para cerrar la sesión de un usuario."""
+    idUser: int = Field(..., examples=[1])
+
+
+class LogoutResponseData(BaseModel):
+    """Resultado del cierre de sesión."""
+    rpta: bool
+
+
+class LogoutResponse(BaseModel):
+    """Respuesta del cierre de sesión."""
+    data: LogoutResponseData
+    message: str
