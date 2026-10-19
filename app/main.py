@@ -24,6 +24,8 @@ from app.schemas import (
     LikeResponse,
     ListaPlaylistRequest,
     ListaPlaylistResponse,
+    LogoutRequest,
+    LogoutResponse,
     MensajesChatRequest,
     MensajesChatResponse,
     PedirCancionRequest,
@@ -854,6 +856,31 @@ def pedir_cancion(request: PedirCancionRequest) -> PedirCancionResponse:
     return PedirCancionResponse(
         data=song,
         message="Canción solicitada correctamente",
+    )
+
+
+# CERRAR SESION
+@app.post(
+    "/logout.php",
+    response_model=LogoutResponse,
+    tags=["logout"],
+)
+def logout(request: LogoutRequest) -> LogoutResponse:
+    """Cierra la sesión del usuario."""
+
+    if users_db.get(request.idUser) is None:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Usuario inválido",
+                "message": "El usuario solicitado no existe",
+            },
+        )
+
+    return LogoutResponse(
+        data={"rpta": True},
+        message="Sesión cerrada correctamente",
     )
 
 

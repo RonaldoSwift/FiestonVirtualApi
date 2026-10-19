@@ -83,6 +83,7 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/ranking.php` | Obtener el ranking de puntajes de un evento |
 | POST   | `/lista_playlist.php` | Obtener la lista de canciones de la playlist de un evento |
 | POST   | `/pedir_cancion.php` | Solicitar una canción de la playlist |
+| POST   | `/logout.php` | Cerrar sesión del usuario |
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -171,6 +172,14 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 {
   "idUser": 1,
   "idPlaylist": 1
+}
+```
+
+### Ejemplo de request para cerrar sesión
+
+```json
+{
+  "idUser": 1
 }
 ```
 
