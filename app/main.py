@@ -1,6 +1,12 @@
-"""Aplicación FastAPI de ejemplo: CRUD simple de items en memoria."""
+"""Aplicación FastAPI y Socket.IO de ejemplo."""
+
+import logging
+import time
+from collections.abc import Mapping
+from urllib.parse import parse_qsl, urlencode
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+import socketio
 
 #Importamos los modelos Pydantic desde el archivo schemas.py
 from app.schemas import (
@@ -48,6 +54,114 @@ app = FastAPI(
     version="0.1.0",
 )
 
+logger = logging.getLogger(__name__)
+socketio_server = socketio.AsyncServer(
+    async_mode="asgi",
+    cors_allowed_origins="*",
+    transports=["polling", "websocket"],
+    allow_upgrades=True,
+)
+
+
+async def get_socket_session(sid: str) -> dict[str, object] | None:
+    """Obtiene la sesión activa y evita propagar carreras de desconexión."""
+    try:
+        return await socketio_server.get_session(sid)
+    except KeyError as error:
+        if str(error).strip("'") == "Session is disconnected":
+            logger.info("Se ignoró un evento de la sesión desconectada: %s", sid)
+            return None
+        raise
+
+
+@socketio_server.event
+async def connect(sid: str, environ: dict[str, object], auth: object | None = None) -> None:
+    """Acepta conexiones Socket.IO desde los clientes móviles."""
+    logger.info("Cliente Socket.IO conectado: %s", sid)
+
+
+@socketio_server.event
+async def disconnect(sid: str) -> None:
+    """Registra la desconexión de un cliente Socket.IO."""
+    logger.info("Cliente Socket.IO desconectado: %s", sid)
+
+
+@socketio_server.on("join")
+async def join_event(sid: str, data: object) -> None:
+    """Une un cliente a la sala asociada con un evento."""
+    if isinstance(data, Mapping):
+        id_event = data.get("idEvent")
+    else:
+        id_event = data
+
+    try:
+        event_id = int(id_event)
+    except (TypeError, ValueError):
+        await socketio_server.emit(
+            "error",
+            {"message": "join requiere un idEvent numérico"},
+            to=sid,
+        )
+        return
+
+    room = f"event_{event_id}"
+    previous_session = await get_socket_session(sid)
+    if previous_session is None:
+        return
+    previous_room = previous_session.get("event_room")
+    if previous_room and previous_room != room:
+        await socketio_server.leave_room(sid, previous_room)
+    await socketio_server.enter_room(sid, room)
+    session = {
+        "event_room": room,
+        "idUser": data.get("idUser") if isinstance(data, Mapping) else None,
+        "userName": data.get("userName", "") if isinstance(data, Mapping) else "",
+        "userImage": data.get("userImage", "") if isinstance(data, Mapping) else "",
+    }
+    await socketio_server.save_session(sid, session)
+    logger.info("Usuario %s conectado a la sala %s", sid, room)
+
+
+@socketio_server.on("message")
+async def message_event(sid: str, data: object) -> None:
+    """Emite un mensaje a todos los clientes de la sala del evento."""
+    session = await get_socket_session(sid)
+    if session is None:
+        return
+    room = session.get("event_room")
+    if not room:
+        await socketio_server.emit(
+            "error",
+            {"message": "Debes ejecutar join antes de enviar mensajes"},
+            to=sid,
+        )
+        return
+
+    if isinstance(data, Mapping):
+        message_text = data.get("messageText", data.get("message", ""))
+        message_data = {
+            "idUserMessage": data.get("idUserMessage", session.get("idUser")),
+            "messageText": str(message_text),
+            "userName": data.get("userName", session.get("userName", "")),
+            "userImage": data.get("userImage", session.get("userImage", "")),
+        }
+    else:
+        message_data = {
+            "idUserMessage": session.get("idUser"),
+            "messageText": str(data),
+            "userName": session.get("userName", ""),
+            "userImage": session.get("userImage", ""),
+        }
+
+    await socketio_server.emit(
+        "message",
+        {
+            "idMessage": str(time.time_ns() // 1_000_000),
+            **message_data,
+        },
+        room=room,
+    )
+
 # "Base de datos" en memoria, solo para este ejemplo.
 items_db: dict[int, ItemResponse] = {}
 next_id = 1
@@ -58,6 +172,10 @@ next_id = 1
 invitation_codes_db = {
     123456: {
         "idUser": 1,
+        "idEvent": 1,
+    },
+    654321: {
+        "idUser": 2,
         "idEvent": 1,
     }
 }
@@ -70,6 +188,22 @@ users_db = {
         "userLastName": "De Prueba",
         "userSurName": "",
         "userEmail": "usuario@example.com",
+        "userPhone": "",
+        "userCell": "",
+        "userTotalScore": 0,
+        "userStatus": 1,
+        "avatar": "",
+        "userLikesPhotos": 0,
+        "userLikesVideos": 0,
+        "userRanking": 0,
+    },
+    2: {
+        "idUser": 2,
+        "idEvent": 1,
+        "userName": "Segundo",
+        "userLastName": "Usuario",
+        "userSurName": "",
+        "userEmail": "segundo.usuario@example.com",
         "userPhone": "",
         "userCell": "",
         "userTotalScore": 0,
@@ -174,6 +308,7 @@ chat_messages_db: list[dict[str, int | str]] = [
         "userMessage": "Usuario De Prueba",
     }
 ]
+next_chat_message_id = 2
 playlist_db: list[dict[str, int | str | bool]] = [
     {
         "idPlaylist": 1,
@@ -253,6 +388,17 @@ def consulta_codigo(request: ConsultaCodigoRequest) -> ConsultaCodigoResponse:
                 "code": 404,
                 "title": "Código de invitación no encontrado",
                 "message": "El código de invitación no es válido",
+            },
+        )
+
+    user = users_db.get(invitation["idUser"])
+    if user is None or user["userStatus"] != 1 or user["idEvent"] != invitation["idEvent"]:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": 400,
+                "title": "Invitación inválida",
+                "message": "El usuario asociado a la invitación no está habilitado para este evento",
             },
         )
 
@@ -1001,3 +1147,51 @@ def like_publicacion(request: LikeRequest) -> LikeResponse:
         data={"userLikes": user_likes},
         message=message,
     )
+
+
+# Uvicorn debe cargar este ASGIApp para exponer FastAPI y Socket.IO en el mismo puerto.
+socketio_app = socketio.ASGIApp(
+    socketio_server,
+    other_asgi_app=app,
+    socketio_path="socket.io",
+)
+
+
+async def socketio_compatibility_app(scope: dict, receive: object, send: object) -> None:
+    """Completa EIO=4 para clientes que omiten la versión en el handshake."""
+    if (
+        scope["type"] in {"http", "websocket"}
+        and scope.get("path", "").rstrip("/") == "/socket.io"
+    ):
+        query = parse_qsl(scope.get("query_string", b"").decode("ascii"), keep_blank_values=True)
+        query_keys = {key for key, _ in query}
+        if "transport" in query_keys and "EIO" not in query_keys:
+            if "sid" not in query_keys:
+                logger.warning("Handshake Socket.IO sin EIO; se usará EIO=4 por compatibilidad")
+            compatible_scope = dict(scope)
+            compatible_scope["query_string"] = urlencode([*query, ("EIO", "4")]).encode("ascii")
+            scope = compatible_scope
+
+    try:
+        await socketio_app(scope, receive, send)
+    except KeyError as error:
+        if str(error).strip("'") != "Session is disconnected":
+            raise
+
+        logger.info("Se rechazó una petición de una sesión Socket.IO desconectada")
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 400,
+                "headers": [(b"content-type", b"text/plain; charset=utf-8")],
+            }
+        )
+        await send(
+            {
+                "type": "http.response.body",
+                "body": b"Invalid session",
+            }
+        )
+
+
+app = socketio_compatibility_app

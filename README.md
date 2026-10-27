@@ -38,10 +38,17 @@ poetry install
 ## Ejecutar el servicio
 
 ```bash
-poetry run uvicorn app.main:app --reload
+poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 El servicio quedará disponible en [http://127.0.0.1:8000](http://127.0.0.1:8000).
+La conexión Socket.IO usa `http://localhost.proxyman.io:8000/socket.io/`, con
+los transportes `polling` y `websocket`.
+El servidor acepta clientes que envían `EIO=4` y también completa `EIO=4`
+cuando un cliente legado envía únicamente `transport=polling&b64=1`.
+El upgrade de polling a WebSocket requiere que Proxyman conserve los headers
+`Upgrade: websocket` y `Connection: Upgrade`; si el proxy no los reenvía, el
+cliente puede configurarse temporalmente con `transports: ["polling"]`.
 
 Documentación interactiva (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
@@ -84,6 +91,32 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/lista_playlist.php` | Obtener la lista de canciones de la playlist de un evento |
 | POST   | `/pedir_cancion.php` | Solicitar una canción de la playlist |
 | POST   | `/logout.php` | Cerrar sesión del usuario |
+
+### Chat Socket.IO
+
+El servidor acepta los eventos `join` y `message` en la ruta `/socket.io/`.
+Los clientes que se unen al mismo evento comparten una sala con el formato
+`event_<idEvent>`.
+
+```javascript
+socket.emit("join", 3);
+socket.emit("message", "Hola");
+socket.on("message", (message) => {
+  console.log(message.messageText);
+});
+```
+
+También se puede enviar `join` como un objeto para asociar los metadatos del
+usuario al mensaje:
+
+```javascript
+socket.emit("join", {
+  idEvent: 3,
+  idUser: 1,
+  userName: "Usuario",
+  userImage: "",
+});
+```
 
 ### Ejemplo de request para consultar el detalle de un evento
 
@@ -217,6 +250,19 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 - `idEvent`: identificador del evento.
 - `postType`: tipo de publicación.
 - `postTitle`: título de la publicación.
+
+### Usuarios de prueba para chat
+
+Hay dos códigos de invitación activos para el mismo evento:
+
+| Código | `idUser` | `idEvent` |
+| ------ | -------- | --------- |
+| `123456` | `1` | `1` |
+| `654321` | `2` | `1` |
+
+Valida cada código con `POST /consulta_codigo.php`. Ambos usuarios quedan
+asociados al mismo `idEvent` y pueden consultar el mismo chat mediante
+`POST /mensajes_chat.php`.
 
 ### Ejemplo de request para crear un item
 
