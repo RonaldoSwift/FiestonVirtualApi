@@ -10,6 +10,8 @@ import socketio
 
 #Importamos los modelos Pydantic desde el archivo schemas.py
 from app.schemas import (
+    AgregarPlaylistRequest,
+    AgregarPlaylistResponse,
     ConsultaCodigoRequest,
     ConsultaCodigoResponse,
     AgregarComentarioRequest,
@@ -309,16 +311,8 @@ chat_messages_db: list[dict[str, int | str]] = [
     }
 ]
 next_chat_message_id = 2
-playlist_db: list[dict[str, int | str | bool]] = [
-    {
-        "idPlaylist": 1,
-        "idEvent": 1,
-        "playlistBand": "Banda de prueba",
-        "playlistRegistrationDate": "2026-01-01",
-        "playlistSong": "Canción de prueba",
-        "playlistStatus": True,
-    }
-]
+playlist_db: list[dict[str, int | str | bool]] = []
+next_playlist_id = 1
 
 
 @app.get("/", tags=["health"])
@@ -926,6 +920,48 @@ def ranking(request: RankingRequest) -> RankingResponse:
 
 
 # LISTA DE PLAYLIST
+@app.post(
+    "/agregar_playlist.php",
+    response_model=AgregarPlaylistResponse,
+    status_code=201,
+    tags=["lista_playlist"],
+)
+def agregar_playlist(request: AgregarPlaylistRequest) -> AgregarPlaylistResponse:
+    """Agrega una canción y devuelve la playlist completa del evento."""
+    global next_playlist_id
+
+    if events_db.get(request.idEvent) is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 404,
+                "title": "Evento no encontrado",
+                "message": "El evento solicitado no existe",
+            },
+        )
+
+    playlist_db.append(
+        {
+            "idPlaylist": next_playlist_id,
+            "idEvent": request.idEvent,
+            "playlistBand": request.playlistBand,
+            "playlistRegistrationDate": request.playlistRegistrationDate,
+            "playlistSong": request.playlistSong,
+            "playlistStatus": request.playlistStatus,
+            "playListURL": request.playListURL,
+        }
+    )
+    next_playlist_id += 1
+
+    playlist = [
+        song for song in playlist_db if song["idEvent"] == request.idEvent
+    ]
+    return AgregarPlaylistResponse(
+        data={"playlist": playlist},
+        message="Canción agregada correctamente",
+    )
+
+
 @app.post(
     "/lista_playlist.php",
     response_model=ListaPlaylistResponse,

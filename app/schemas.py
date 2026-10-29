@@ -420,6 +420,21 @@ class PlaylistSong(BaseModel):
     playlistRegistrationDate: str
     playlistSong: str
     playlistStatus: bool
+    playListURL: str
+
+
+class AgregarPlaylistRequest(BaseModel):
+    """Datos para agregar una canción a la playlist de un evento."""
+    idEvent: int = Field(..., examples=[1])
+    playlistBand: str = Field(..., min_length=1, examples=["Farruko"])
+    playlistRegistrationDate: str = Field(..., examples=["2025-01-01"])
+    playlistSong: str = Field(..., min_length=1, examples=["Pepas"])
+    playlistStatus: bool = Field(default=True, examples=[True])
+    playListURL: str = Field(
+        ...,
+        min_length=1,
+        examples=["https://s3.amazonaws.com/kargopolov/kukushka.mp3"],
+    )
 
 
 class ListaPlaylistResponseData(BaseModel):
@@ -429,6 +444,12 @@ class ListaPlaylistResponseData(BaseModel):
 
 class ListaPlaylistResponse(BaseModel):
     """Respuesta del listado de playlist."""
+    data: ListaPlaylistResponseData
+    message: str
+
+
+class AgregarPlaylistResponse(BaseModel):
+    """Respuesta de la canción agregada y la playlist actualizada."""
     data: ListaPlaylistResponseData
     message: str
 

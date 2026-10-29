@@ -89,7 +89,8 @@ Este proyecto incluye una configuración en `.vscode/launch.json`. Sigue estos p
 | POST   | `/mensajes_chat.php` | Obtener los mensajes del chat de un evento |
 | POST   | `/ranking.php` | Obtener el ranking de puntajes de un evento |
 | POST   | `/lista_playlist.php` | Obtener la lista de canciones de la playlist de un evento |
-| POST   | `/pedir_cancion.php` | Solicitar una canción de la playlist |
+| POST | `/agregar_playlist.php` | Agregar una canción a la playlist y devolver la lista actualizada |
+| POST | `/pedir_cancion.php` | Solicitar una canción de la playlist |
 | POST   | `/logout.php` | Cerrar sesión del usuario |
 
 ### Chat Socket.IO
@@ -196,6 +197,19 @@ socket.emit("join", {
 {
   "idEvent": 1,
   "search": "canción"
+}
+```
+
+### Ejemplo de request para agregar una canción a la playlist
+
+```json
+{
+  "idEvent": 1,
+  "playlistBand": "Farruko",
+  "playlistRegistrationDate": "2025-01-01",
+  "playlistSong": "Pepas",
+  "playlistStatus": true,
+  "playListURL": "https://s3.amazonaws.com/kargopolov/kukushka.mp3"
 }
 ```
 
