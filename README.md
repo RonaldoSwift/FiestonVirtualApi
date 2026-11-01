@@ -200,6 +200,10 @@ socket.emit("join", {
 }
 ```
 
+La playlist del evento de prueba ya incluye canciones iniciales. La respuesta
+de `/lista_playlist.php` las devuelve automáticamente y las canciones nuevas
+se agregan mediante `/agregar_playlist.php`.
+
 ### Ejemplo de request para agregar una canción a la playlist
 
 ```json

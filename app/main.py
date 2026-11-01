@@ -311,8 +311,27 @@ chat_messages_db: list[dict[str, int | str]] = [
     }
 ]
 next_chat_message_id = 2
-playlist_db: list[dict[str, int | str | bool]] = []
-next_playlist_id = 1
+playlist_db: list[dict[str, int | str | bool]] = [
+    {
+        "idPlaylist": 1,
+        "idEvent": 1,
+        "playlistBand": "Farruko",
+        "playlistRegistrationDate": "2026-01-01",
+        "playlistSong": "Pepas",
+        "playlistStatus": True,
+        "playListURL": "https://s3.amazonaws.com/kargopolov/kukushka.mp3",
+    },
+    {
+        "idPlaylist": 2,
+        "idEvent": 1,
+        "playlistBand": "Bad Bunny",
+        "playlistRegistrationDate": "2026-01-01",
+        "playlistSong": "Tití Me Preguntó",
+        "playlistStatus": True,
+        "playListURL": "https://s3.amazonaws.com/kargopolov/kukushka.mp3",
+    },
+]
+next_playlist_id = 3
 
 
 @app.get("/", tags=["health"])
